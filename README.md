@@ -1201,7 +1201,11 @@ ______________________________________________________________________
 
 <div align="center">
 
+<<<<<<< HEAD
 # Your Project Name
+=======
+# GSyncCode: Geometry Synchronous decoding Hidden Code for One-step Photography Decoding
+>>>>>>> e08a38767f7e6b06096e191c9b0b2d6a7d1612bf
 
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5?logo=pytorchlightning&logoColor=white"></a>
@@ -1254,6 +1258,10 @@ python src/train.py experiment=experiment_name.yaml
 
 You can override any parameter from command line like this
 
+<<<<<<< HEAD
 ```bash
 python src/train.py trainer.max_epochs=20 data.batch_size=64
 ```
+=======
+The decoding results under the [Screen-camera](https://youtu.be/WbEb_JnJRaM) scenario and the [Printer-camera](https://youtu.be/PSlMney6AO4) scenario. 
+>>>>>>> e08a38767f7e6b06096e191c9b0b2d6a7d1612bf
