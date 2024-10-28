@@ -2,15 +2,13 @@ _target_: src.models.screenshootresilient.ScreenShootResilient
 
 region_selector:
   _target_: src.models.region_selectors.gradient_based.SobelBasedRegionSelector
-  # _target_: src.models.region_selectors.center_based.CenterBasedRegionSelector
-  size: 128 # the same size of qrcode
+  size: 128
   stride: 16
 
 encoder:
   _target_: src.models.encoders.haar_encoder.HaarEncoder2
   in_channels: 6
   out_channels: 3
-  haar_sampling: false
 
 decoder:
   _target_: src.models.decoders.invisible_markers_decoder.InvisibleMarkersDecoder
@@ -65,7 +63,7 @@ loss_cfg:
   lpips_weight: 1.
   suppress_max_weight: 0.   # suppress max value already performed by l2 loss.
   # l2_yuv_weight: [1, 1, 1]
-  haar_yuv_weight: [1, 1., 1., 1, 1., 1., 1., 1., 1., 1., 1., 1]  # weights for ll_{yuv}, lh, hl, hh
+  haar_yuv_weight: [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]  # weights for ll_{yuv}, lh, hl, hh
   decode_weight: 10.
 
 model_cfg:
