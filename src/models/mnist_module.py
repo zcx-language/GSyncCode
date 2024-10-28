@@ -1,42 +1,24 @@
-from typing import Any, Dict, Tuple
+from typing import Any, List
 
 import torch
-from lightning import LightningModule
+from pytorch_lightning import LightningModule
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification.accuracy import Accuracy
 
 
 class MNISTLitModule(LightningModule):
-    """Example of a `LightningModule` for MNIST classification.
+    """Example of LightningModule for MNIST classification.
 
-    A `LightningModule` implements 8 key methods:
-
-    ```python
-    def __init__(self):
-    # Define initialization code here.
-
-    def setup(self, stage):
-    # Things to setup before each stage, 'fit', 'validate', 'test', 'predict'.
-    # This hook is called on every process when using DDP.
-
-    def training_step(self, batch, batch_idx):
-    # The complete training step.
-
-    def validation_step(self, batch, batch_idx):
-    # The complete validation step.
-
-    def test_step(self, batch, batch_idx):
-    # The complete test step.
-
-    def predict_step(self, batch, batch_idx):
-    # The complete predict step.
-
-    def configure_optimizers(self):
-    # Define and configure optimizers and LR schedulers.
-    ```
+    A LightningModule organizes your PyTorch code into 6 sections:
+        - Computations (init)
+        - Train loop (training_step)
+        - Validation loop (validation_step)
+        - Test loop (test_step)
+        - Prediction Loop (predict_step)
+        - Optimizers and LR Schedulers (configure_optimizers)
 
     Docs:
-        https://lightning.ai/docs/pytorch/latest/common/lightning_module.html
+        https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html
     """
 
     def __init__(
@@ -44,13 +26,7 @@ class MNISTLitModule(LightningModule):
         net: torch.nn.Module,
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler,
-    ) -> None:
-        """Initialize a `MNISTLitModule`.
-
-        :param net: The model to train.
-        :param optimizer: The optimizer to use for training.
-        :param scheduler: The learning rate scheduler to use for training.
-        """
+    ):
         super().__init__()
 
         # this line allows to access init params with 'self.hparams' attribute
@@ -75,50 +51,22 @@ class MNISTLitModule(LightningModule):
         # for tracking best so far validation accuracy
         self.val_acc_best = MaxMetric()
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Perform a forward pass through the model `self.net`.
-
-        :param x: A tensor of images.
-        :return: A tensor of logits.
-        """
+    def forward(self, x: torch.Tensor):
         return self.net(x)
 
-    def on_train_start(self) -> None:
-        """Lightning hook that is called when training begins."""
+    def on_train_start(self):
         # by default lightning executes validation step sanity checks before training starts,
-        # so it's worth to make sure validation metrics don't store results from these checks
-        self.val_loss.reset()
-        self.val_acc.reset()
+        # so we need to make sure val_acc_best doesn't store accuracy from these checks
         self.val_acc_best.reset()
 
-    def model_step(
-        self, batch: Tuple[torch.Tensor, torch.Tensor]
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Perform a single model step on a batch of data.
-
-        :param batch: A batch of data (a tuple) containing the input tensor of images and target labels.
-
-        :return: A tuple containing (in order):
-            - A tensor of losses.
-            - A tensor of predictions.
-            - A tensor of target labels.
-        """
+    def model_step(self, batch: Any):
         x, y = batch
         logits = self.forward(x)
         loss = self.criterion(logits, y)
         preds = torch.argmax(logits, dim=1)
         return loss, preds, y
 
-    def training_step(
-        self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
-    ) -> torch.Tensor:
-        """Perform a single training step on a batch of data from the training set.
-
-        :param batch: A batch of data (a tuple) containing the input tensor of images and target
-            labels.
-        :param batch_idx: The index of the current batch.
-        :return: A tensor of losses between model predictions and targets.
-        """
+    def training_step(self, batch: Any, batch_idx: int):
         loss, preds, targets = self.model_step(batch)
 
         # update and log metrics
@@ -127,20 +75,24 @@ class MNISTLitModule(LightningModule):
         self.log("train/loss", self.train_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("train/acc", self.train_acc, on_step=False, on_epoch=True, prog_bar=True)
 
-        # return loss or backpropagation will fail
-        return loss
+        # we can return here dict with any tensors
+        # and then read it in some callback or in `training_epoch_end()` below
+        # remember to always return loss from `training_step()` or backpropagation will fail!
+        return {"loss": loss, "preds": preds, "targets": targets}
 
-    def on_train_epoch_end(self) -> None:
-        "Lightning hook that is called when a training epoch ends."
+    def training_epoch_end(self, outputs: List[Any]):
+        # `outputs` is a list of dicts returned from `training_step()`
+
+        # Warning: when overriding `training_epoch_end()`, lightning accumulates outputs from all batches of the epoch
+        # this may not be an issue when training on mnist
+        # but on larger datasets/models it's easy to run into out-of-memory errors
+
+        # consider detaching tensors before returning them from `training_step()`
+        # or using `on_train_epoch_end()` instead which doesn't accumulate outputs
+
         pass
 
-    def validation_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
-        """Perform a single validation step on a batch of data from the validation set.
-
-        :param batch: A batch of data (a tuple) containing the input tensor of images and target
-            labels.
-        :param batch_idx: The index of the current batch.
-        """
+    def validation_step(self, batch: Any, batch_idx: int):
         loss, preds, targets = self.model_step(batch)
 
         # update and log metrics
@@ -149,21 +101,16 @@ class MNISTLitModule(LightningModule):
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/acc", self.val_acc, on_step=False, on_epoch=True, prog_bar=True)
 
-    def on_validation_epoch_end(self) -> None:
-        "Lightning hook that is called when a validation epoch ends."
+        return {"loss": loss, "preds": preds, "targets": targets}
+
+    def validation_epoch_end(self, outputs: List[Any]):
         acc = self.val_acc.compute()  # get current val acc
         self.val_acc_best(acc)  # update best so far val acc
         # log `val_acc_best` as a value through `.compute()` method, instead of as a metric object
         # otherwise metric would be reset by lightning after each epoch
-        self.log("val/acc_best", self.val_acc_best.compute(), sync_dist=True, prog_bar=True)
+        self.log("val/acc_best", self.val_acc_best.compute(), prog_bar=True)
 
-    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
-        """Perform a single test step on a batch of data from the test set.
-
-        :param batch: A batch of data (a tuple) containing the input tensor of images and target
-            labels.
-        :param batch_idx: The index of the current batch.
-        """
+    def test_step(self, batch: Any, batch_idx: int):
         loss, preds, targets = self.model_step(batch)
 
         # update and log metrics
@@ -172,19 +119,17 @@ class MNISTLitModule(LightningModule):
         self.log("test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("test/acc", self.test_acc, on_step=False, on_epoch=True, prog_bar=True)
 
-    def on_test_epoch_end(self) -> None:
-        """Lightning hook that is called when a test epoch ends."""
+        return {"loss": loss, "preds": preds, "targets": targets}
+
+    def test_epoch_end(self, outputs: List[Any]):
         pass
 
-    def configure_optimizers(self) -> Dict[str, Any]:
-        """Configures optimizers and learning-rate schedulers to be used for training.
-
-        Normally you'd need one, but in the case of GANs or similar you might need multiple.
+    def configure_optimizers(self):
+        """Choose what optimizers and learning-rate schedulers to use in your optimization.
+        Normally you'd need one. But in the case of GANs or similar you might have multiple.
 
         Examples:
-            https://lightning.ai/docs/pytorch/latest/common/lightning_module.html#configure-optimizers
-
-        :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.
+            https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html#configure-optimizers
         """
         optimizer = self.hparams.optimizer(params=self.parameters())
         if self.hparams.scheduler is not None:

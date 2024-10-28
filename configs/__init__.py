@@ -1,1 +1,19 @@
-# this file is needed here to include configs when building project as a package
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# @Project      : ScreenShootResilient
+# @File         : __init__.py
+# @Author       : chengxin
+# @Email        : zcx_language@163.com
+# @Reference    : None
+# @CreateTime   : 2023/3/10 10:58
+
+# Import lib here
+
+
+def run():
+    pass
+
+
+if __name__ == '__main__':
+    run()

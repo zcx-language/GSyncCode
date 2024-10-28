@@ -1,0 +1,26 @@
+_target_: src.datamodules.datamodules.DataModules
+
+datasets:
+  mirflickr_qrcode:
+    _target_: src.datamodules.mirflickr_qrcode.MirflickrQRCode
+    _partial_: True
+    data_dir: ${paths.data_dir}/mirflickr
+    img_size: [256, 256]
+    msg_len: 12
+    qrcode_size: [128, 128]
+    code_type: dmtx
+  illumination_pattern:
+    _target_: src.datamodules.illumination_pattern.IlluminationPattern
+    _partial_: True
+    data_dir: ${paths.data_dir}/IlluminationPattern/images
+    pattern_size: [256, 256]  # Attention, must be equal to img_size
+  moire_pattern:
+    _target_: src.datamodules.moire_pattern.MoirePattern
+    _partial_: True
+    data_dir: ${paths.data_dir}/MoirePattern/images
+    pattern_size: [256, 256]
+
+dataloader_cfg:
+  batch_size: 32
+  num_workers: 4
+  pin_memory: False

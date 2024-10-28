@@ -3,7 +3,7 @@
 # runs with execution time profiling
 
 defaults:
-  - default
+  - default.yaml
 
 trainer:
   max_epochs: 1

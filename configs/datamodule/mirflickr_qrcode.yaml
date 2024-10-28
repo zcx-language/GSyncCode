@@ -1,0 +1,15 @@
+_target_: src.datamodules.datamodule.DataModule
+
+dataset:
+  _target_: src.datamodules.mirflickr_qrcode.MirflickrQRCode
+  _partial_: true
+  data_dir: ${paths.data_dir}/mirflickr
+  img_size: [256, 256]
+  msg_len: 12
+  qrcode_size: [128, 128]
+  code_type: dmtx
+
+dataloader_cfg:
+  batch_size: 32
+  num_workers: 4
+  pin_memory: false

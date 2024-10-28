@@ -148,7 +148,5 @@ dmypy.json
 configs/local/default.yaml
 /data/
 /logs/
+/datasets/
 .env
-
-# Aim logging
-.aim

@@ -1,0 +1,17 @@
+_target_: src.datamodules.datamodule.DataModule
+
+dataset:
+  _target_: src.datamodules.host_barcode_illum_moire.HostBarcodeIllumMoire
+  _partial_: true
+  host_dir: ${paths.data_dir}/mirflickr
+  illum_dir: ${paths.data_dir}/IlluminationPattern/images
+  moire_dir: ${paths.data_dir}/MoirePattern/images
+  msg_len: 12
+  barcode_size: [128, 128]
+  img_size: [256, 256]
+
+dataloader_cfg:
+  batch_size: 32
+  num_workers: 4
+  pin_memory: true
+

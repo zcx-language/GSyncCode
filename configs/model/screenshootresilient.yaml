@@ -1,0 +1,118 @@
+_target_: src.models.screenshootresilient.ScreenShootResilient
+
+region_selector:
+  _target_: src.models.region_selectors.gradient_based.SobelBasedRegionSelector
+  # _target_: src.models.region_selectors.center_based.CenterBasedRegionSelector
+  size: 128 # the same size of qrcode
+  stride: 16
+
+encoder:
+  # _target_: src.models.encoders.invisible_markers_encoder.InvisibleMarkersEncoder
+  # ckpt_path: /home/chengxin/Project/ScreenShootResilient/src/models/encoders/inv_encoder0401010848299.pt
+  # _target_: src.models.encoders.haar_encoder.HaarEncoder2
+  # ckpt_path: /home/chengxin/Project/ScreenShootResilient/src/models/encoders/haar2_encoder0403192533299.pt
+  # _target_: src.models.encoders.inv_encoder.InvEncoder
+  # n_inv_blocks: 8
+  # _target_: src.models.encoders.unet_encoder.UNetEncoder
+  # _target_: src.models.encoders.trans_encoder.TransEncoder
+  # _target_: src.models.encoders.no_encoder.NoEncoder
+  # _target_: src.models.encoders.mask_encoder.MaskEncoderHaarUNet
+  _target_: src.models.encoders.stegastamp_encoder.StegaStampEncoder
+  in_channels: 6
+  out_channels: 3
+  haar_sampling: false
+
+decoder:
+  # _target_: src.models.decoders.invisible_markers_decoder.InvisibleMarkersDecoder
+  # ckpt_path: /home/chengxin/Project/ScreenShootResilient/src/models/decoders/inv_decoder0401010848299.pt
+  # ckpt_path: /home/chengxin/Project/ScreenShootResilient/src/models/decoders/dmtx_inv_decoder0408093649299.pt
+  # _target_: src.models.decoders.haar_decoder.HaarDecoder2
+  # in_channels: 3
+  # out_channels: 1
+  # _target_: src.models.decoders.inv_decoder.InvDecoder
+  # in_channels: 3
+  # out_channels: 1
+  # _target_: src.models.decoders.stn_decoder.STNDecoder
+  # input_size: [3, 256, 256]
+  # out_channels: 1
+  # num_stn: 1
+  # _target_: src.models.decoders.unet_decoder.UNetDecoder
+  # _target_: src.models.decoders.trans_decoder.TransDecoder
+  _target_: src.models.decoders.stegastamp_decoder.StegaStampDecoder
+  in_channels: 3
+  out_channels: 1
+
+
+discriminator:
+  _target_: src.models.discriminators.nlayer_discriminator.NLayerDiscriminator
+  input_nc: 3
+
+# augmenter:
+#   _target_: src.models.augmenters.pimog_augmenter.PIMoGAugmenter
+#   perspective_scale: 0.5
+#   perspective_p: 1.
+#   illumination_p: 1.
+#   moire_weight_bound: 0.15
+#   moire_p: 1.
+#   noise_std: 0.01
+#   noise_p: 1.
+augmenter:
+  _target_: src.models.augmenters.augmenter.Augmenter
+  aug_dict:
+    perspective:
+      _target_: src.models.augmenters.random_perspective.RandomPerspective
+      _partial_: True
+      # distortion_scale: 0.3
+      resample: nearest
+      p: 1.
+      sampling_method: basic
+      padding_mode: border
+      distortion_scale_bound: 0.3
+    # colorjitter:
+    #   _target_: kornia.augmentation.ColorJitter
+    #   brightness: 0.3
+    #   contrast: 0.3
+    #   saturation: 0.1
+    #   hue: 0.1
+    #   p: 0.9
+    illumination:
+      _target_: src.models.augmenters.illumination.Illumination
+      p: 0.9
+    moire:
+      _target_: src.models.augmenters.moire.Moire
+      # weight_bound: 0.15
+      weight_bound: 0.1
+      p: 0.9
+    blur:
+      _target_: kornia.augmentation.RandomGaussianBlur
+      kernel_size: [3, 3]
+      # 0.3*((ksize-1)*0.5 - 1) + 0.8
+      sigma: [0.8, 0.8]
+      p: 0.9
+    noise:
+      _target_: kornia.augmentation.RandomGaussianNoise
+      mean: 0.0
+      std: 0.02
+    jpeg:
+      _target_: src.models.augmenters.DiffJPEG.DiffJPEG.DiffJPEG
+      height: 256
+      width: 256
+      differentiable: True
+      quality: 80
+      p: 0.9
+
+loss_cfg:
+  gan_weight: 0.
+  lpips_weight: 1.
+  suppress_max_weight: 0.   # suppress max value already performed by l2 loss.
+  # l2_yuv_weight: [1, 1, 1]
+  haar_yuv_weight: [1, 1., 1., 1, 1., 1., 1., 1., 1., 1., 1., 1]  # weights for ll_{yuv}, lh, hl, hh
+  decode_weight: 10.
+
+model_cfg:
+  geometric_sync: True # Set to `True` to make qrcode_gt warped the same perspective of container
+  alpha: 1.   # weight for host
+  beta: 1.    # weight for residual
+  embed_edge: False
+  mask_residual: True
+  code_type: dmtx

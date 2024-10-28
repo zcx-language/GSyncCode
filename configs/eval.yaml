@@ -2,13 +2,13 @@
 
 defaults:
   - _self_
-  - data: mnist # choose datamodule with `test_dataloader()` for evaluation
-  - model: mnist
-  - logger: null
-  - trainer: default
-  - paths: default
-  - extras: default
-  - hydra: default
+  - datamodule: mirflickr_qrcode_illumination_moire.yaml # choose datamodule with `test_dataloader()` for evaluation
+  - model: screenshootresilient_test.yaml
+  - logger: tensorboard.yaml
+  - trainer: default.yaml
+  - paths: default.yaml
+  - extras: default.yaml
+  - hydra: default.yaml
 
 task_name: "eval"
 
