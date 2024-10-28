@@ -7,38 +7,13 @@ region_selector:
   stride: 16
 
 encoder:
-  # _target_: src.models.encoders.invisible_markers_encoder.InvisibleMarkersEncoder
-  # ckpt_path: /home/chengxin/Project/ScreenShootResilient/src/models/encoders/inv_encoder0401010848299.pt
-  # _target_: src.models.encoders.haar_encoder.HaarEncoder2
-  # ckpt_path: /home/chengxin/Project/ScreenShootResilient/src/models/encoders/haar2_encoder0403192533299.pt
-  # _target_: src.models.encoders.inv_encoder.InvEncoder
-  # n_inv_blocks: 8
-  # _target_: src.models.encoders.unet_encoder.UNetEncoder
-  # _target_: src.models.encoders.trans_encoder.TransEncoder
-  # _target_: src.models.encoders.no_encoder.NoEncoder
-  # _target_: src.models.encoders.mask_encoder.MaskEncoderHaarUNet
-  _target_: src.models.encoders.stegastamp_encoder.StegaStampEncoder
+  _target_: src.models.encoders.haar_encoder.HaarEncoder2
   in_channels: 6
   out_channels: 3
   haar_sampling: false
 
 decoder:
-  # _target_: src.models.decoders.invisible_markers_decoder.InvisibleMarkersDecoder
-  # ckpt_path: /home/chengxin/Project/ScreenShootResilient/src/models/decoders/inv_decoder0401010848299.pt
-  # ckpt_path: /home/chengxin/Project/ScreenShootResilient/src/models/decoders/dmtx_inv_decoder0408093649299.pt
-  # _target_: src.models.decoders.haar_decoder.HaarDecoder2
-  # in_channels: 3
-  # out_channels: 1
-  # _target_: src.models.decoders.inv_decoder.InvDecoder
-  # in_channels: 3
-  # out_channels: 1
-  # _target_: src.models.decoders.stn_decoder.STNDecoder
-  # input_size: [3, 256, 256]
-  # out_channels: 1
-  # num_stn: 1
-  # _target_: src.models.decoders.unet_decoder.UNetDecoder
-  # _target_: src.models.decoders.trans_decoder.TransDecoder
-  _target_: src.models.decoders.stegastamp_decoder.StegaStampDecoder
+  _target_: src.models.decoders.invisible_markers_decoder.InvisibleMarkersDecoder
   in_channels: 3
   out_channels: 1
 
@@ -47,15 +22,6 @@ discriminator:
   _target_: src.models.discriminators.nlayer_discriminator.NLayerDiscriminator
   input_nc: 3
 
-# augmenter:
-#   _target_: src.models.augmenters.pimog_augmenter.PIMoGAugmenter
-#   perspective_scale: 0.5
-#   perspective_p: 1.
-#   illumination_p: 1.
-#   moire_weight_bound: 0.15
-#   moire_p: 1.
-#   noise_std: 0.01
-#   noise_p: 1.
 augmenter:
   _target_: src.models.augmenters.augmenter.Augmenter
   aug_dict:
@@ -68,13 +34,6 @@ augmenter:
       sampling_method: basic
       padding_mode: border
       distortion_scale_bound: 0.3
-    # colorjitter:
-    #   _target_: kornia.augmentation.ColorJitter
-    #   brightness: 0.3
-    #   contrast: 0.3
-    #   saturation: 0.1
-    #   hue: 0.1
-    #   p: 0.9
     illumination:
       _target_: src.models.augmenters.illumination.Illumination
       p: 0.9
